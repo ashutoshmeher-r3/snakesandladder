@@ -78,7 +78,7 @@
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <div style="text-align: center; margin-top: 20px">Powered by
+                    <div style="text-align: center; margin-top: -6px; font-size: 13px;">Powered by
                         <image class="power-by" src="img/corda.png" alt="Corda"/>
                     </div>
                 </div>
@@ -87,35 +87,73 @@
 
         <!-- Game Screen -->
         <div ng-show="appCtrl.gameScreen" style="margin: 15px 30px">
-            <div class="row" style="position: relative;">
-<!--                <div class="spinner" ng-show="appCtrl.showAuctionSpinner">-->
-<!--                    <div>-->
-<!--                        <image style="width: 100px;" src="/img/spinner.svg"></image>-->
-<!--                    </div>-->
-<!--                </div>-->
-                <div class="col-md-12"><h3>Active Auction</h3></div>
-                <div class="col-md-12 nodata" style="font-size:20px;" ng-if="!appCtrl.auctions || appCtrl.auctions.length == 0">
-                    No Active Auctions Found
+            <div class="row">
+                <div class="col-md-6 offset-1">
+                    <div class="board-wrapper">
+                        <img src="img/game-board.jpg" style="height:100%;width: 100%;">
+                        <div class="player"></div>
+                        <div class="player" style="background: blue; left: 30px;"></div>
+                    </div>
                 </div>
-                <div class="col-md-3" ng-repeat="auction in appCtrl.auctions">
-                    <div class="box-wrapper">
-                        <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: #111111">
-                            <image ng-click= "appCtrl.openAuctionModal(auction)" class="asset-img"
-                                   src="{{appCtrl.assetMap[auction.state.data.auctionItem.pointer.id].state.data.imageUrl}}"></image>
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="box-wrapper col-md-5">
+                            <div style="font-size: 20px;color: red;font-weight: bold;">
+                                Player1
+                            </div>
+                            <div style="float: right;margin-right: 15px;font-size: 58px;">1</div>
                         </div>
-                        <div class="image-title">
-                            <div>
-                                <div>Auctioned By: <span style="font-family: serif;">{{auction.state.data.auctioneer}}</span></div>
-                                <div>Base Price: <span style="font-family: serif;">{{auction.state.data.basePrice}}</span></div>
-                                <div>Highest Bid:
-                                    <span style="font-family: serif;">
-                                        {{auction.state.data.highestBid?auction.state.data.highestBid : 'No Bids'}}
-                                    </span>
-                                </div>
-                                <div>Highest Bidder:
-                                    <span style="font-family: serif;">
-                                        {{auction.state.data.highestBidder? auction.state.data.highestBidder : 'N/A'}}
-                                    </span>
+                        <div class="box-wrapper col-md-5 offset-1">
+                            <div style="font-size: 20px;color: blue;font-weight: bold;">
+                                Player2
+                            </div>
+                            <div style="float: right;margin-right: 15px;font-size: 58px;">1</div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 50px;">
+                        <div class="col-md-12" style="text-align: center; margin-bottom: 20px;">
+                            <button class="btn btn-lg btn-primary" ng-click="appCtrl.rollDice()">Roll The Dice</button>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="dice-wrapper">
+                                <div class="dice">
+                                    <ol class="die-list"
+                                        ng-class="{'odd-roll':appCtrl.dice.diceRollFlag, 'even-roll':!appCtrl.dice.diceRollFlag}"
+                                        ng-attr-data-roll="{{appCtrl.dice.roll}}" ng-attr-id="{{appCtrl.dice.id}}">
+                                        <li class="die-item" data-side="1">
+                                            <span class="dot"></span>
+                                        </li>
+                                        <li class="die-item" data-side="2">
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                        </li>
+                                        <li class="die-item" data-side="3">
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                        </li>
+                                        <li class="die-item" data-side="4">
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                        </li>
+                                        <li class="die-item" data-side="5">
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                        </li>
+                                        <li class="die-item" data-side="6">
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                            <span class="dot"></span>
+                                        </li>
+                                    </ol>
                                 </div>
                             </div>
                         </div>
@@ -123,29 +161,6 @@
                 </div>
             </div>
 
-<!--            <hr class="col-md-12">-->
-
-<!--            <div class="row" style="position: relative;">-->
-<!--                <div class="spinner" ng-show="appCtrl.showAssetSpinner">-->
-<!--                    <div>-->
-<!--                        <image style="width: 100px;" src="/img/spinner.svg"></image>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="col-md-12"><h3>My Assets</h3></div>-->
-<!--                <div class="col-md-12 nodata" style="font-size:20px;" ng-if="!appCtrl.assets || appCtrl.assets.length == 0">-->
-<!--                    No Assets Found-->
-<!--                </div>-->
-<!--                <div class="col-md-3" ng-repeat="asset in appCtrl.assets">-->
-<!--                    <div class="box-wrapper">-->
-<!--                        <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: #111111">-->
-<!--                            <image ng-click= "appCtrl.openAssetModal(asset.state.data.linearId)" class="asset-img" src="{{asset.state.data.imageUrl}}"></image>-->
-<!--                        </div>-->
-<!--                        <div class="image-title">-->
-<!--                            {{asset.state.data.title}}-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
         </div>
     </div>
 

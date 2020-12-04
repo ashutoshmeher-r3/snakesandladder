@@ -10,16 +10,19 @@ app.controller('AppController', function($http, toastr, $uibModal) {
     const demoApp = this;
     const apiBaseURL = "/api/snl/";
 
-    demoApp.landingScreen = true;
-    demoApp.gameScreen = false;
-//    demoApp.activeParty = "PartyA";
-//    demoApp.assetMap = {};
-//    demoApp.balance = 0;
+    demoApp.landingScreen = false;
+    demoApp.gameScreen = true;
     demoApp.showSpinner = false;
 //    demoApp.showAuctionSpinner = false;
 //    demoApp.showAssetSpinner = false;
     demoApp.player1 = "";
     demoApp.player2 = "";
+    demoApp.dice = {
+        diceRollFlag : false,
+        roll: 6,
+        id: "die-6"
+    }
+
 
     demoApp.startGame = () => {
         demoApp.showSpinner = true;
@@ -28,15 +31,24 @@ app.controller('AppController', function($http, toastr, $uibModal) {
             if(response.data && response.data.status){
                 toastr.success('Game Created Successfully!');
                 const gameId = response.data.data;
-                demoApp.fetchGame(gameId);
-                demoApp.landingScreen = false;
                 demoApp.gameScreen = true;
+                demoApp.landingScreen = false;
+                demoApp.fetchGame(gameId);
             }else{
                 toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
             }
             demoApp.showSpinner = false;
         });
+    }
 
+    demoApp.rollDice = () => {
+        demoApp.dice.diceRollFlag = !demoApp.dice.diceRollFlag;
+        var min = Math.ceil(1);
+        var max = Math.floor(6);
+        var roll = Math.floor(Math.random() * (max - min + 1)) + min;
+        console.log(roll);
+        demoApp.dice.roll = roll;
+        demoApp.dice.id = "die-" + roll;
     }
 
     demoApp.loadGame = (gameId) => {
