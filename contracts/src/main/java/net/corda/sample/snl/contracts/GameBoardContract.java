@@ -14,6 +14,16 @@ public class GameBoardContract implements Contract {
 
     public interface Commands extends CommandData {
         class Create implements Commands {}
-        class PlayMove implements Commands {}
+        class PlayMove implements Commands {
+            private int roll;
+
+            public PlayMove(int roll) {
+                this.roll = roll;
+            }
+
+            public int getRoll() {
+                return roll;
+            }
+        }
     }
 }

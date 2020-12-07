@@ -6,19 +6,24 @@ import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount;
 import com.r3.corda.lib.accounts.workflows.services.AccountService;
 import com.r3.corda.lib.accounts.workflows.services.KeyManagementBackedAccountService;
 import com.sun.istack.NotNull;
+import net.corda.core.contracts.Command;
 import net.corda.core.contracts.ReferencedStateAndRef;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.contracts.UniqueIdentifier;
+import net.corda.core.crypto.TransactionSignature;
 import net.corda.core.flows.*;
 import net.corda.core.identity.AbstractParty;
+import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.QueryCriteria;
+import net.corda.core.transactions.FilteredTransaction;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.sample.snl.contracts.GameBoardContract;
 import net.corda.sample.snl.states.BoardConfig;
 import net.corda.sample.snl.states.GameBoard;
+import net.corda.samples.snl.oracle.flows.OracleSignatureFlow;
 
 import java.security.SignatureException;
 import java.util.Arrays;
@@ -125,7 +130,7 @@ public class PlayerMoveFlow {
             TransactionBuilder transactionBuilder = new TransactionBuilder(notary)
                     .addInputState(gameBoardList.get(0))
                     .addOutputState(outputGameBoard)
-                    .addCommand(new GameBoardContract.Commands.PlayMove(), Arrays.asList(currPlayer.getOwningKey(),
+                    .addCommand(new GameBoardContract.Commands.PlayMove(diceRolled), Arrays.asList(currPlayer.getOwningKey(),
                             otherPlayer.getOwningKey()))
                     .addReferenceState(new ReferencedStateAndRef<>(boardConfigList.get(0)));
 
@@ -134,9 +139,24 @@ public class PlayerMoveFlow {
             SignedTransaction selfSignedTransaction =
                     getServiceHub().signInitialTransaction(transactionBuilder, currPlayer.getOwningKey());
 
+            Party oracle = getServiceHub().getNetworkMapCache()
+                    .getNodeByLegalName(CordaX500Name.parse("O=Oracle,L=Mumbai,C=IN")).getLegalIdentities().get(0);
+
+            FilteredTransaction ftx = selfSignedTransaction.buildFilteredTransaction(o -> {
+                if (o instanceof Command && ((Command) o).getSigners().contains(oracle.getOwningKey())
+                        && ((Command) o).getValue() instanceof GameBoardContract.Commands.PlayMove) {
+                    return  true;
+                }
+                return false;
+            });
+
+            TransactionSignature oracleSignature = subFlow(new OracleSignatureFlow(oracle, ftx));
+            SignedTransaction selfAndOracleSignedTransaction = selfSignedTransaction.withAdditionalSignature(oracleSignature);
+
+
             FlowSession otherPlayerSession =  initiateFlow(otherPlayerAccountInfo.get().getHost());
             SignedTransaction signedTransaction =
-                    subFlow(new CollectSignaturesFlow(selfSignedTransaction, Collections.singletonList(otherPlayerSession),
+                    subFlow(new CollectSignaturesFlow(selfAndOracleSignedTransaction, Collections.singletonList(otherPlayerSession),
                             Collections.singletonList(currPlayer.getOwningKey())));
 
             if(!otherPlayerAccountInfo.get().getHost().equals(getOurIdentity())) {

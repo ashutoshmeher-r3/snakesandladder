@@ -3,6 +3,7 @@
   padding: 0;
   vertical-align: baseline;
 }
+
 html {
   font-family: system-ui, sans-serif;
 }
@@ -283,4 +284,35 @@ h3{
   .dice {
     perspective: 1300px;
   }
+}
+
+.app-modal-window .modal-dialog {
+  min-width: 700px;
+}
+
+.modal-backdrop{
+    opacity: 0.6 !important;
+}
+
+.modal{
+    opacity: 1;
+}
+
+.modal-header{
+    padding: 8px 15px;
+}
+
+.modal-content{
+    margin-top: 40%;
+}
+
+.fas{
+    padding: 10px;
+    background: #EEEEEE;
+    border-bottom: 1px solid #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+    border-top: 1px solid #CCCCCC;
+    border-radius: 0 6px 6px 0;
+    min-width: 40px;
+    text-align: center;
 }

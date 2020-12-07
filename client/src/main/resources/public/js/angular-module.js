@@ -10,18 +10,18 @@ app.controller('AppController', function($http, toastr, $uibModal) {
     const demoApp = this;
     const apiBaseURL = "/api/snl/";
 
-    demoApp.landingScreen = false;
-    demoApp.gameScreen = true;
+    demoApp.landingScreen = true;
+    demoApp.gameScreen = false;
     demoApp.showSpinner = false;
+    demoApp.player = "";
 //    demoApp.showAuctionSpinner = false;
 //    demoApp.showAssetSpinner = false;
-    demoApp.player1 = "";
-    demoApp.player2 = "";
     demoApp.dice = {
         diceRollFlag : false,
         roll: 6,
         id: "die-6"
     }
+    demoApp.game = {};
 
 
     demoApp.startGame = () => {
@@ -30,10 +30,11 @@ app.controller('AppController', function($http, toastr, $uibModal) {
         .then((response) => {
             if(response.data && response.data.status){
                 toastr.success('Game Created Successfully!');
-                const gameId = response.data.data;
+                var gameId = response.data.data;
                 demoApp.gameScreen = true;
                 demoApp.landingScreen = false;
-                demoApp.fetchGame(gameId);
+                demoApp.game = demoApp.fetchGame(gameId);
+                demoApp.player = demoApp.game.player1;
             }else{
                 toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
             }
@@ -42,16 +43,33 @@ app.controller('AppController', function($http, toastr, $uibModal) {
     }
 
     demoApp.rollDice = () => {
-        demoApp.dice.diceRollFlag = !demoApp.dice.diceRollFlag;
-        var min = Math.ceil(1);
-        var max = Math.floor(6);
-        var roll = Math.floor(Math.random() * (max - min + 1)) + min;
-        console.log(roll);
-        demoApp.dice.roll = roll;
-        demoApp.dice.id = "die-" + roll;
+        demoApp.showSpinner = true;
+            $http.get(apiBaseURL + 'rollDice')
+            .then((response) => {
+                if(response.data && response.data.status){
+                    demoApp.dice.diceRollFlag = !demoApp.dice.diceRollFlag;
+                    var roll = response.data.data
+                    demoApp.dice.roll = roll;
+                    demoApp.dice.id = "die-" + roll;
+                }else{
+                    toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
+                }
+                demoApp.showSpinner = false;
+        });
+
+
+
     }
 
-    demoApp.loadGame = (gameId) => {
+    demoApp.loadGame = (gameId, player) => {
+        demoApp.game = demoApp.fetchGame(gameId);
+        if(player == 1){
+            demoApp.player = demoApp.game.player1;
+        }else{
+            demoApp.player = demoApp.game.player2;
+        }
+        demoApp.gameScreen = true;
+        demoApp.landingScreen = false;
     }
 
     demoApp.openCreateAccountModal = () => {
@@ -81,107 +99,6 @@ app.controller('AppController', function($http, toastr, $uibModal) {
        });
     }
 
-//
-//    demoApp.switchParty = (party) => {
-//        $http.post(apiBaseURL + 'switch-party/' + party)
-//        .then((response) => {
-//           if(response.data && response.data.status){
-//               demoApp.balance = response.data.data;
-//               demoApp.activeParty = party;
-//               demoApp.fetchAssets();
-//               demoApp.fetchAuctions();
-//               toastr.success('Switched to '+ party);
-//           }else{
-//               toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
-//           }
-//        });
-//    }
-//
-//
-//    demoApp.fetchAuctions = () => {
-//       demoApp.showAuctionSpinner = true;
-//       $http.get(apiBaseURL + 'list')
-//       .then((response) => {
-//          if(response.data && response.data.status){
-//             demoApp.auctions = response.data.data;
-//          }else{
-//             toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
-//          }
-//          demoApp.showAuctionSpinner = false;
-//       });
-//    }
-//
-//    demoApp.fetchAssets = () => {
-//        demoApp.showAssetSpinner = true;
-//       $http.get(apiBaseURL + 'asset/list')
-//       .then((response) => {
-//          if(response.data && response.data.status){
-//                demoApp.assets = [];
-//                for(let i in response.data.data){
-//                    if(response.data.data[i].state.data.owner.includes(demoApp.activeParty)){
-//                        demoApp.assets.push(response.data.data[i]);
-//                    }
-//                    demoApp.assetMap[response.data.data[i].state.data.linearId.id] = response.data.data[i]
-//                }
-//          }else{
-//             toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
-//          }
-//          demoApp.showAssetSpinner = false;
-//       });
-//    }
-//
-//    demoApp.openAuctionModal = (auction) => {
-//        const auctionModal = $uibModal.open({
-//            templateUrl: 'auctionModal.html',
-//            controller: 'AuctionModalCtrl',
-//            controllerAs: 'auctionModalCtrl',
-//            windowClass: 'app-modal-window',
-//            resolve: {
-//                demoApp: () => demoApp,
-//                apiBaseURL: () => apiBaseURL,
-//                toastr: () => toastr,
-//                auction: () => auction,
-//                asset: () => demoApp.assetMap[auction.state.data.auctionItem.pointer.id],
-//                activeParty: () => demoApp.activeParty
-//            }
-//        });
-//
-//        auctionModal.result.then(() => {}, () => {});
-//    };
-//
-//
-//    demoApp.openAssetModal = (assetId) => {
-//        const assetModal = $uibModal.open({
-//            templateUrl: 'assetModal.html',
-//            controller: 'AssetModalCtrl',
-//            controllerAs: 'assetModalCtrl',
-//            windowClass: 'app-modal-window',
-//            resolve: {
-//                demoApp: () => demoApp,
-//                apiBaseURL: () => apiBaseURL,
-//                toastr: () => toastr,
-//                asset: () => demoApp.assetMap[assetId.id]
-//            }
-//        });
-//
-//        assetModal.result.then(() => {}, () => {});
-//    };
-//
-//    demoApp.openIssueCashModal = (assetId) => {
-//        const cashModal = $uibModal.open({
-//            templateUrl: 'issueCashModal.html',
-//            controller: 'CashModalCtrl',
-//            controllerAs: 'cashModalCtrl',
-//            resolve: {
-//                demoApp: () => demoApp,
-//                apiBaseURL: () => apiBaseURL,
-//                toastr: () => toastr,
-//            }
-//        });
-//
-//        cashModal.result.then(() => {}, () => {});
-//    };
-
 });
 
 
@@ -199,7 +116,6 @@ app.controller('CreateAccountModalCtrl', function ($http, $uibModalInstance, $ui
            .then((response) => {
               if(response.data && response.data.status){
                   toastr.success('Gamer Account Create Successfully');
-                  //demoApp.fetchAssets();
                   $uibModalInstance.dismiss();
               }else{
                   toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");

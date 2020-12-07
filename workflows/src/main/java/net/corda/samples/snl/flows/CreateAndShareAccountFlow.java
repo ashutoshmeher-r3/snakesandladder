@@ -9,6 +9,7 @@ import net.corda.core.flows.FlowException;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.InitiatingFlow;
 import net.corda.core.flows.StartableByRPC;
+import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 
 import java.util.List;
@@ -33,11 +34,15 @@ public class CreateAndShareAccountFlow extends FlowLogic<String> {
                 (StateAndRef<AccountInfo>) subFlow(new CreateAccount(accountName));
 
         final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
+        Party oracle = getServiceHub().getNetworkMapCache()
+                .getNodeByLegalName(CordaX500Name.parse("O=Oracle,L=Mumbai,C=IN")).getLegalIdentities().get(0);
+
         List<Party> parties = getServiceHub().getNetworkMapCache().getAllNodes().stream()
                 .map(nodeInfo -> nodeInfo.getLegalIdentities().get(0))
                 .collect(Collectors.toList());
         parties.remove(getOurIdentity());
         parties.remove(notary);
+        parties.remove(oracle);
 
         //Share this AccountInfo object with the parties who want to transact with this account
         subFlow(new ShareAccountInfo(accountInfoStateAndRef, parties));
