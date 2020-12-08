@@ -25,8 +25,8 @@ public class Forms {
 
     public static class PlayerMoveForm {
         private String player;
-        private String uniqueId;
-        private int diceRolled;
+        private String gameId;
+        private int rolledNumber;
 
         public String getPlayer() {
             return player;
@@ -36,20 +36,12 @@ public class Forms {
             this.player = player;
         }
 
-        public String getUniqueId() {
-            return uniqueId;
+        public String getGameId() {
+            return gameId;
         }
 
-        public void setUniqueId(String uniqueId) {
-            this.uniqueId = uniqueId;
-        }
-
-        public int getDiceRolled() {
-            return diceRolled;
-        }
-
-        public void setDiceRolled(int diceRolled) {
-            this.diceRolled = diceRolled;
+        public int getRolledNumber() {
+            return rolledNumber;
         }
     }
 

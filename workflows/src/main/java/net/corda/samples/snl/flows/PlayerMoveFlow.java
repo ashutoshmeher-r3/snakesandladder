@@ -41,10 +41,10 @@ public class PlayerMoveFlow {
     public static class Initiator extends FlowLogic<SignedTransaction> {
 
         private String player;
-        private UniqueIdentifier linearId;
+        private String linearId;
         private int diceRolled;
 
-        public Initiator(String player, UniqueIdentifier linearId, int diceRolled) {
+        public Initiator(String player, String linearId, int diceRolled) {
             this.player = player;
             this.linearId = linearId;
             this.diceRolled = diceRolled;
@@ -66,7 +66,7 @@ public class PlayerMoveFlow {
             // Get game board
             QueryCriteria.LinearStateQueryCriteria linearStateQueryCriteria =
                     new QueryCriteria.LinearStateQueryCriteria(null,
-                            Collections.singletonList(UUID.fromString(linearId.getId().toString())),
+                            Collections.singletonList(UUID.fromString(linearId)),
                             null, Vault.StateStatus.UNCONSUMED, null);
             List<StateAndRef<GameBoard>> gameBoardList =  getServiceHub().getVaultService()
                     .queryBy(GameBoard.class, linearStateQueryCriteria).getStates();

@@ -57,7 +57,7 @@ public class CreateGameFlow {
             AbstractParty player2 = subFlow(new RequestKeyForAccount(p2accountInfo.get(0).getState().getData()));
 
             GameBoard gameBoard = new GameBoard(new UniqueIdentifier(null, UUID.randomUUID()),
-                    player1, player2, this.player1, 0, 0, null);
+                    player1, player2, this.player1, 1, 1, null);
 
             List<StateAndRef<BoardConfig>> boardConfigList =
                     getServiceHub().getVaultService().queryBy(BoardConfig.class).getStates();

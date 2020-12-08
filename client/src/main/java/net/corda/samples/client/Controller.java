@@ -1,5 +1,6 @@
 package net.corda.samples.client;
 
+import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.messaging.CordaRPCOps;
 import net.corda.samples.snl.flows.*;
 import net.corda.samples.snl.oracle.flows.DiceRollerFlow;
@@ -25,10 +26,11 @@ public class Controller {
     }
 
     @PostMapping("playerMove")
-    public APIResponse<Void> createGame(@RequestBody Forms.PlayerMoveForm playerMoveForm) {
+    public APIResponse<Void> playMove(@RequestBody Forms.PlayerMoveForm playerMoveForm) {
         try{
             rpcProxy.startFlowDynamic(PlayerMoveFlow.Initiator.class, playerMoveForm.getPlayer(),
-                    playerMoveForm.getUniqueId(), playerMoveForm.getDiceRolled()).getReturnValue().get();
+                        playerMoveForm.getGameId(),
+                    Integer.valueOf(playerMoveForm.getRolledNumber())).getReturnValue().get();
             return APIResponse.success();
         }catch(Exception e){
             return APIResponse.error(e.getMessage());

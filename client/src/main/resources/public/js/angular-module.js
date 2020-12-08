@@ -6,7 +6,7 @@ let httpHeaders = {
         }
     };
 
-app.controller('AppController', function($http, toastr, $uibModal) {
+app.controller('AppController', function($http, toastr, $uibModal, $interval) {
     const demoApp = this;
     const apiBaseURL = "/api/snl/";
 
@@ -14,15 +14,13 @@ app.controller('AppController', function($http, toastr, $uibModal) {
     demoApp.gameScreen = false;
     demoApp.showSpinner = false;
     demoApp.player = "";
-//    demoApp.showAuctionSpinner = false;
-//    demoApp.showAssetSpinner = false;
+    demoApp.playerNum = 1;
     demoApp.dice = {
         diceRollFlag : false,
         roll: 6,
         id: "die-6"
     }
     demoApp.game = {};
-
 
     demoApp.startGame = () => {
         demoApp.showSpinner = true;
@@ -33,13 +31,18 @@ app.controller('AppController', function($http, toastr, $uibModal) {
                 var gameId = response.data.data;
                 demoApp.gameScreen = true;
                 demoApp.landingScreen = false;
-                demoApp.game = demoApp.fetchGame(gameId);
-                demoApp.player = demoApp.game.player1;
+                demoApp.game = demoApp.fetchGame(gameId, 1);
             }else{
                 toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
             }
             demoApp.showSpinner = false;
         });
+    }
+
+    demoApp.loadGame = (gameId, player) => {
+        demoApp.fetchGame(gameId, player, 0);
+        demoApp.gameScreen = true;
+        demoApp.landingScreen = false;
     }
 
     demoApp.rollDice = () => {
@@ -51,26 +54,74 @@ app.controller('AppController', function($http, toastr, $uibModal) {
                     var roll = response.data.data
                     demoApp.dice.roll = roll;
                     demoApp.dice.id = "die-" + roll;
+                    demoApp.playMove(roll);
                 }else{
                     toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
                 }
                 demoApp.showSpinner = false;
         });
-
-
-
     }
 
-    demoApp.loadGame = (gameId, player) => {
-        demoApp.game = demoApp.fetchGame(gameId);
-        if(player == 1){
-            demoApp.player = demoApp.game.player1;
+
+    demoApp.playMove = (rolledNumber) => {
+        demoApp.showSpinner = true;
+        $http.post(apiBaseURL + 'playerMove', {player: demoApp.player, gameId: demoApp.game.linearId.id, rolledNumber: rolledNumber})
+        .then((response) => {
+            if(response.data && response.data.status){
+                demoApp.fetchGame(demoApp.game.linearId.id);
+            }else{
+                toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
+            }
+            demoApp.showSpinner = false;
+        });
+    }
+
+    // 0 - loadGame
+    demoApp.animatePlayer = (flag) => {
+        var playerSelector = "";
+        if(flag == 0){
+            updateP1Pos();
+            updateP2Pos();
         }else{
-            demoApp.player = demoApp.game.player2;
+            if(demoApp.playerNum ==1){
+                updateP1Pos();
+            }else if(demoApp.playerNum == 2){
+                 updateP2Pos();
+            }
         }
-        demoApp.gameScreen = true;
-        demoApp.landingScreen = false;
     }
+
+    const updateP1Pos = () => {
+        // X position
+        if((demoApp.game.player1Pos % 20 == 0))
+            angular.element(document.querySelector('#player1'))[0].style.left = (((demoApp.game.player1Pos-1) %10)*80) + 10 - 720+ "px";
+        else if((parseInt(demoApp.game.player1Pos/10) % 2 == 0) || (demoApp.game.player1Pos % 10 == 0 ))
+            angular.element(document.querySelector('#player1'))[0].style.left = (((demoApp.game.player1Pos-1) %10)*80) + 10 + "px"
+        else
+            angular.element(document.querySelector('#player1'))[0].style.left = ((10 - (demoApp.game.player1Pos %10))*80) + 10 + "px"
+
+        // Y Position
+
+        if(parseInt(demoApp.game.player1Pos/10) % 10 == 0 && parseInt(demoApp.game.player1Pos/10) != 0 || demoApp.game.player1Pos%10 == 0)
+            angular.element(document.querySelector('#player1'))[0].style.top = 750 - (parseInt(demoApp.game.player1Pos/10) * 80) + 80 + "px";
+        else
+            angular.element(document.querySelector('#player1'))[0].style.top = 750 - (parseInt(demoApp.game.player1Pos/10) * 80) + "px";
+    }
+
+    const updateP2Pos = () => {
+        if((demoApp.game.player2Pos % 20 == 0))
+            angular.element(document.querySelector('#player2'))[0].style.left = (((demoApp.game.player2Pos-1) %10)*80) + 30 - 720+ "px";
+        else if((parseInt(demoApp.game.player2Pos/10) % 2 == 0) || (demoApp.game.player2Pos % 10 == 0 ))
+            angular.element(document.querySelector('#player2'))[0].style.left = (((demoApp.game.player2Pos-1) %10)*80) + 30 + "px";
+        else
+            angular.element(document.querySelector('#player2'))[0].style.left = ((10 - (demoApp.game.player2Pos %10))*80) + 30 + "px"
+
+        if(parseInt(demoApp.game.player2Pos/10) % 10 == 0 && parseInt(demoApp.game.player2Pos/10) != 0 || demoApp.game.player2Pos%10 == 0)
+            angular.element(document.querySelector('#player2'))[0].style.top = 750 - (parseInt(demoApp.game.player2Pos/10) * 80) + 80 + "px";
+        else
+            angular.element(document.querySelector('#player2'))[0].style.top = 750 - (parseInt(demoApp.game.player2Pos/10) * 80) + "px";
+    }
+
 
     demoApp.openCreateAccountModal = () => {
         const accountModel = $uibModal.open({
@@ -88,16 +139,31 @@ app.controller('AppController', function($http, toastr, $uibModal) {
         accountModel.result.then(() => {}, () => {});
     };
 
-    demoApp.fetchGame = (gameId) => {
+    demoApp.fetchGame = (gameId, player, flag) => {
        $http.get(apiBaseURL + 'getGame/' + gameId)
        .then((response) => {
           if(response.data && response.data.status){
               demoApp.game = response.data.data;
+              if(player == 1){
+                    demoApp.player = demoApp.game.player1;
+                    demoApp.playerNum  = 1;
+                }else if(player == 2){
+                    demoApp.player = demoApp.game.player2;
+                    demoApp.playerNum  = 2;
+                }
+                demoApp.game.player2Pos = 1;
+                demoApp.animatePlayer(flag);
           }else{
               toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
           }
        });
     }
+
+    $interval(function(){
+        console.log("Executed");
+        if(demoApp.game.linearId != undefined)
+            demoApp.fetchGame(demoApp.game.linearId.id, undefined, 0);
+    },5000)
 
 });
 
@@ -128,162 +194,3 @@ app.controller('CreateAccountModalCtrl', function ($http, $uibModalInstance, $ui
     createAccountModel.cancel = () => $uibModalInstance.dismiss();
 
 });
-
-//app.controller('CashModalCtrl', function ($http, $uibModalInstance, $uibModal, demoApp, apiBaseURL, toastr) {
-//    const cashModalModel = this;
-//
-//    cashModalModel.form = {};
-//    cashModalModel.form.party = "PartyA";
-//    cashModalModel.issueCash = () => {
-//        if(cashModalModel.form.amount == undefined){
-//           toastr.error("Please enter amount to be issued");
-//        }else{
-//            demoApp.showSpinner = true;
-//            $http.post(apiBaseURL + 'issueCash', cashModalModel.form)
-//            .then((response) => {
-//               if(response.data && response.data.status){
-//                   toastr.success('Cash Issued Successfully');
-//                   demoApp.fetchBalance();
-//                   $uibModalInstance.dismiss();
-//               }else{
-//                   toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
-//               }
-//               demoApp.showSpinner = false;
-//            });
-//        }
-//    }
-//
-//    cashModalModel.cancel = () => $uibModalInstance.dismiss();
-//
-//});
-//
-//app.controller('AuctionModalCtrl', function ($http, $uibModalInstance, $uibModal, $interval, demoApp, apiBaseURL, toastr, auction, asset, activeParty) {
-//    const auctionModalModel = this;
-//
-//    auctionModalModel.asset = asset;
-//    auctionModalModel.auction = auction;
-//    auctionModalModel.timer = {};
-//    auctionModalModel.activeParty = activeParty;
-//    let deadline = new Date(auctionModalModel.auction.state.data.bidEndTime).getTime();
-//    auctionModalModel.bidForm = {};
-//
-//    auctionModalModel.bidForm = {};
-//
-//    auctionModalModel.cancel = () => $uibModalInstance.dismiss();
-//
-//    auctionModalModel.placeBid = (auctionId) => {
-//        auctionModalModel.bidForm.auctionId = auctionId;
-//        if(auctionModalModel.auction.state.data.auctioneer.includes(auctionModalModel.activeParty)){
-//           toastr.error("Can't Bid on your own Auction");
-//           return;
-//        }
-//        if(auctionModalModel.bidForm.amount == undefined || auctionModalModel.bidForm.amount == ''){
-//           toastr.error("Please enter Bid Amount");
-//           return;
-//        }
-//        demoApp.showSpinner = true;
-//        $http.post(apiBaseURL + 'placeBid', auctionModalModel.bidForm)
-//       .then((response) => {
-//           if(response.data && response.data.status){
-//               toastr.success('Bid Placed Successfully');
-//               $uibModalInstance.dismiss();
-//               demoApp.fetchAuctions();
-//           }else{
-//               toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
-//           }
-//           demoApp.showSpinner = false;
-//       });
-//    }
-//
-//    auctionModalModel.payAndSettle = () => {
-//       auctionModalModel.settlementForm = {}
-//       auctionModalModel.settlementForm.auctionId = auctionModalModel.auction.state.data.auctionId;
-//       auctionModalModel.settlementForm.amount = auctionModalModel.auction.state.data.highestBid;
-//       demoApp.showSpinner = true;
-//       $http.post(apiBaseURL + 'payAndSettle', auctionModalModel.settlementForm)
-//       .then((response) => {
-//           if(response.data && response.data.status){
-//               toastr.success('Auction Settled Successfully');
-//               $uibModalInstance.dismiss();
-//               demoApp.fetchAuctions();
-//               demoApp.fetchAssets();
-//               demoApp.fetchBalance();
-//           }else{
-//               toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
-//           }
-//           demoApp.showSpinner = false;
-//       });
-//    }
-//
-//    auctionModalModel.exit = () => {
-//        demoApp.showSpinner = true;
-//        $http.post(apiBaseURL + 'delete' + '/' + auctionModalModel.auction.state.data.auctionId)
-//        .then((response) => {
-//            if(response.data && response.data.status){
-//                toastr.success('Auction Deleted Successfully');
-//                $uibModalInstance.dismiss();
-//                demoApp.fetchAuctions();
-//            }else{
-//                toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
-//            }
-//            demoApp.showSpinner = false;
-//        });
-//    }
-//
-//
-//      var x = $interval(function() {
-//            let now = new Date().getTime();
-//            let distance =  deadline - now;
-//
-//            auctionModalModel.timer.days = Math.floor(distance / (1000 * 60 * 60 * 24));
-//            auctionModalModel.timer.hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-//            auctionModalModel.timer.minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-//            auctionModalModel.timer.seconds = Math.floor((distance % (1000 * 60)) / 1000);
-//
-//            if(distance < 0){
-//                $interval.cancel();
-//                auctionModalModel.timer.days = 0;
-//                auctionModalModel.timer.hours = 0;
-//                auctionModalModel.timer.minutes = 0;
-//                auctionModalModel.timer.seconds = 0;
-//                auctionModalModel.auction.state.data.active = false;
-//                $interval.cancel(x);
-//                demoApp.fetchAuctions();
-//            }
-//        }, 1000);
-//});
-//
-//app.controller('AssetModalCtrl', function ($http, $uibModalInstance, $uibModal, demoApp, apiBaseURL, toastr, asset) {
-//    const assetModalModel = this;
-//
-//    assetModalModel.asset = asset;
-//
-//    assetModalModel.createAuctionForm = {};
-//
-//    assetModalModel.cancel = () => $uibModalInstance.dismiss();
-//
-//    assetModalModel.createAuction = (assetId) => {
-//        assetModalModel.createAuctionForm.assetId = assetId.id;
-//        assetModalModel.createAuctionForm.deadline = $("#datetimepicker > input").val();
-//
-//        if(assetModalModel.createAuctionForm.basePrice == undefined ||
-//            assetModalModel.createAuctionForm.deadline == undefined ||
-//            assetModalModel.createAuctionForm.deadline == "" ||
-//            assetModalModel.createAuctionForm.basePrice == ""){
-//            toastr.error("Base Price and Auction Deadline are mandatory");
-//        }else{
-//            demoApp.showSpinner = true;
-//            $http.post(apiBaseURL + 'create', assetModalModel.createAuctionForm)
-//            .then((response) => {
-//               if(response.data && response.data.status){
-//                    $uibModalInstance.dismiss();
-//                    demoApp.fetchAuctions();
-//                    toastr.success('Asset placed in auction successfully.');
-//               }else{
-//                   toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
-//               }
-//               demoApp.showSpinner = false;
-//            });
-//        }
-//    }
-//});
