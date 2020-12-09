@@ -51,7 +51,8 @@ public class QueyGameInfo extends FlowLogic<GameInfo> {
                 gameBoard.getCurrentPlayer(),
                 gameBoard.getPlayer1Pos(),
                 gameBoard.getPlayer2Pos(),
-                gameBoard.getWinner()
+                gameBoard.getWinner(),
+                gameBoard.getLastRoll()
         );
         return gameInfo;
     }

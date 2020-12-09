@@ -13,14 +13,33 @@ app.controller('AppController', function($http, toastr, $uibModal, $interval) {
     demoApp.landingScreen = true;
     demoApp.gameScreen = false;
     demoApp.showSpinner = false;
+    demoApp.pristine = true;
+    demoApp.isP1 = false;
     demoApp.player = "";
     demoApp.playerNum = 1;
+    demoApp.rolledFlag = false;
     demoApp.dice = {
         diceRollFlag : false,
         roll: 6,
         id: "die-6"
     }
     demoApp.game = {};
+
+    demoApp.console = {
+        welcome: "Welcome to Snakes and Ladders powered by Corda!",
+        myTurn: "You turn to play. Roll the Dice",
+        myRoll: "You rolled ",
+//        snake: "Oops!! You landed on a snake!",
+//        ladder: "Great!! You found on a ladder!",
+        winner: "Congratulation!! You WON.",
+        loser: " won. Hard Luck!! You Lose.",
+        opTurn: "Waiting for your opposition to complete their turn.",
+        opRoll: "Opposition Player rolled "
+//        oppSnake: "And he landed on a snake.",
+//        oppLadder: "And ge found on a ladder.",
+    };
+
+    demoApp.consoleMessages = [demoApp.console.welcome];
 
     demoApp.startGame = () => {
         demoApp.showSpinner = true;
@@ -32,6 +51,7 @@ app.controller('AppController', function($http, toastr, $uibModal, $interval) {
                 demoApp.gameScreen = true;
                 demoApp.landingScreen = false;
                 demoApp.game = demoApp.fetchGame(gameId, 1);
+                demoApp.isP1 = true;
             }else{
                 toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
             }
@@ -40,9 +60,10 @@ app.controller('AppController', function($http, toastr, $uibModal, $interval) {
     }
 
     demoApp.loadGame = (gameId, player) => {
+        if(player ==1){
+            demoApp.isP1 = true;
+        }
         demoApp.fetchGame(gameId, player, 0);
-        demoApp.gameScreen = true;
-        demoApp.landingScreen = false;
     }
 
     demoApp.rollDice = () => {
@@ -68,6 +89,8 @@ app.controller('AppController', function($http, toastr, $uibModal, $interval) {
         $http.post(apiBaseURL + 'playerMove', {player: demoApp.player, gameId: demoApp.game.linearId.id, rolledNumber: rolledNumber})
         .then((response) => {
             if(response.data && response.data.status){
+                demoApp.rolledFlag = true;
+                demoApp.pristine = false;
                 demoApp.fetchGame(demoApp.game.linearId.id);
             }else{
                 toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
@@ -143,6 +166,8 @@ app.controller('AppController', function($http, toastr, $uibModal, $interval) {
        $http.get(apiBaseURL + 'getGame/' + gameId)
        .then((response) => {
           if(response.data && response.data.status){
+              demoApp.gameScreen = true;
+              demoApp.landingScreen = false;
               demoApp.game = response.data.data;
               if(player == 1){
                     demoApp.player = demoApp.game.player1;
@@ -151,12 +176,46 @@ app.controller('AppController', function($http, toastr, $uibModal, $interval) {
                     demoApp.player = demoApp.game.player2;
                     demoApp.playerNum  = 2;
                 }
-                demoApp.game.player2Pos = 1;
                 demoApp.animatePlayer(flag);
+                if(demoApp.game.winner != "null"){
+                    demoApp.handleConsole(true);
+                }else{
+                    demoApp.handleConsole();
+                }
+
           }else{
               toastr.error(response.data? response.data.message: "Something went wrong. Please try again later!");
           }
        });
+    }
+
+    demoApp.handleConsole = (gameOver) => {
+        demoApp.consoleMessages = [];
+        if(gameOver){
+            if(demoApp.game.winner == demoApp.player){
+                demoApp.consoleMessages.push(demoApp.console.winner);
+            }else{
+                demoApp.consoleMessages.push(demoApp.game.winner + " " + demoApp.console.loser);
+            }
+        }else{
+            demoApp.consoleMessages.push(demoApp.console.welcome);
+            if(demoApp.rolledFlag){
+                demoApp.consoleMessages.push(demoApp.console.myRoll + " " + demoApp.game.lastRoll +
+                ". Your new position is " + (demoApp.isP1? demoApp.game.player1Pos:demoApp.game.player2Pos));
+            }
+
+            if(demoApp.player == demoApp.game.currentPlayer){
+                if(!demoApp.pristine){
+                    demoApp.consoleMessages.push(demoApp.console.opRoll + " " + demoApp.game.lastRoll +
+                        ". Their new position is " + (demoApp.isP1? demoApp.game.player2Pos:demoApp.game.player1Pos));
+                }
+                demoApp.consoleMessages.push(demoApp.console.myTurn);
+            }
+            else{
+                demoApp.pristine = false;
+                demoApp.consoleMessages.push(demoApp.console.opTurn);
+            }
+        }
     }
 
     $interval(function(){

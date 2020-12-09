@@ -75,6 +75,10 @@ public class PlayerMoveFlow {
 
             GameBoard gameBoard = gameBoardList.get(0).getState().getData();
 
+            if(gameBoard.getWinner() !=null){
+                throw new FlowException("This Game is Over");
+            }
+
             // Check if the initiator is the current player
             if(!gameBoard.getCurrentPlayer().equals(player))
                 throw new FlowException("Please wait for your turn");
@@ -102,6 +106,9 @@ public class PlayerMoveFlow {
             String winner = null;
             if(player.equals(accountService.accountInfo(gameBoard.getPlayer1().getOwningKey()).getState().getData().getName())){
                 newPlayer1Pos = gameBoard.getPlayer1Pos() + diceRolled;
+                if(newPlayer1Pos > 100){
+                    throw new FlowException("You need to roll " + (100 - gameBoard.getPlayer1Pos()) + " to win.");
+                }
                 if(boardConfig.getLadderPositions().keySet().contains(newPlayer1Pos))
                     newPlayer1Pos = boardConfig.getLadderPositions().get(newPlayer1Pos);
                 else if(boardConfig.getSnakePositions().keySet().contains(newPlayer1Pos))
@@ -113,6 +120,9 @@ public class PlayerMoveFlow {
 
             }else{
                 newPlayer2Pos = gameBoard.getPlayer2Pos() + diceRolled;
+                if(newPlayer2Pos > 100){
+                    throw new FlowException("You need to roll " + (100 - gameBoard.getPlayer2Pos()) + " to win.");
+                }
                 if(boardConfig.getLadderPositions().keySet().contains(newPlayer2Pos))
                     newPlayer2Pos = boardConfig.getLadderPositions().get(newPlayer2Pos);
                 else if(boardConfig.getSnakePositions().keySet().contains(newPlayer2Pos))
@@ -125,7 +135,7 @@ public class PlayerMoveFlow {
 
             GameBoard outputGameBoard = new GameBoard(gameBoard.getLinearId(),
                     gameBoard.getPlayer1(), gameBoard.getPlayer2(), otherPlayerAccountInfo.get().getName(),
-                    newPlayer1Pos, newPlayer2Pos, winner);
+                    newPlayer1Pos, newPlayer2Pos, winner, diceRolled);
 
             TransactionBuilder transactionBuilder = new TransactionBuilder(notary)
                     .addInputState(gameBoardList.get(0))

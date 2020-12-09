@@ -126,7 +126,6 @@
                     <div class="row" style="margin-top: 50px;">
                         <div class="col-md-12" style="text-align: center; margin-bottom: 20px;">
                             <button class="btn btn-lg btn-primary" ng-click="appCtrl.rollDice()">Roll The Dice</button>
-                            <button class="btn btn-lg btn-primary" ng-click="appCtrl.rollDice()">Move</button>
                         </div>
                         <div class="col-md-12">
                             <div class="dice-wrapper">
@@ -173,8 +172,8 @@
                         </div>
                     </div>
                     <div class="row" style="margin-top: 50px;">
-                        <div class="col-md-12">
-                            <p>You rolled 2</p>
+                        <div class="col-md-12 box-wrapper console">
+                            <p ng-repeat="message in appCtrl.consoleMessages">{{message}}</p>
                         </div>
                     </div>
                 </div>

@@ -57,7 +57,7 @@ public class CreateGameFlow {
             AbstractParty player2 = subFlow(new RequestKeyForAccount(p2accountInfo.get(0).getState().getData()));
 
             GameBoard gameBoard = new GameBoard(new UniqueIdentifier(null, UUID.randomUUID()),
-                    player1, player2, this.player1, 1, 1, null);
+                    player1, player2, this.player1, 1, 1, null, 0);
 
             List<StateAndRef<BoardConfig>> boardConfigList =
                     getServiceHub().getVaultService().queryBy(BoardConfig.class).getStates();
@@ -83,7 +83,7 @@ public class CreateGameFlow {
                 subFlow(new FinalityFlow(signedTransaction, Collections.singletonList(player2Session)));
                 try {
                     accountService.shareStateAndSyncAccounts(signedTransaction
-                            .toLedgerTransaction(getServiceHub()).outRef(0) ,player2Session.getCounterparty());
+                            .toLedgerTransaction(getServiceHub(), false).outRef(0) ,player2Session.getCounterparty());
                 } catch (SignatureException e) {
                     e.printStackTrace();
                 }

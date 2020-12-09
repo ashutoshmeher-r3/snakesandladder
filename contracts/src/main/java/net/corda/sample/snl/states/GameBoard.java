@@ -20,9 +20,10 @@ public class GameBoard implements LinearState {
     private int player1Pos;
     private int player2Pos;
     private String winner;
+    private int lastRoll;
 
     public GameBoard(UniqueIdentifier linearId, AbstractParty player1, AbstractParty player2,
-                     String currentPlayer, int player1Pos, int player2Pos, String winner) {
+                     String currentPlayer, int player1Pos, int player2Pos, String winner, int lastRoll) {
         this.linearId = linearId;
         this.player1 = player1;
         this.player2 = player2;
@@ -30,6 +31,7 @@ public class GameBoard implements LinearState {
         this.player1Pos = player1Pos;
         this.player2Pos = player2Pos;
         this.winner = winner;
+        this.lastRoll = lastRoll;
     }
 
     public AbstractParty getPlayer1() {
@@ -54,6 +56,10 @@ public class GameBoard implements LinearState {
 
     public String getWinner() {
         return winner;
+    }
+
+    public int getLastRoll() {
+        return lastRoll;
     }
 
     @NotNull
