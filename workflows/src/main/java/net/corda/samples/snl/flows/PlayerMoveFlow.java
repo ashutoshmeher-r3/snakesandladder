@@ -9,7 +9,6 @@ import com.sun.istack.NotNull;
 import net.corda.core.contracts.Command;
 import net.corda.core.contracts.ReferencedStateAndRef;
 import net.corda.core.contracts.StateAndRef;
-import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.crypto.TransactionSignature;
 import net.corda.core.flows.*;
 import net.corda.core.identity.AbstractParty;

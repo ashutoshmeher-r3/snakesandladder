@@ -28,10 +28,25 @@ Run the project
 
 Now, you should have four Corda terminals opened automatically.
 
-Run the below command to start  client:
+Run the below command to start clients:
 
 ``` ./gradlew runClassicGamesClient```
 
+``` ./gradlew runMegaGamesClient```
+
+The clients can be accessed at http://localhost:50007 and http://localhost:50008 for Classic Games and Mega Games respectively.
+
+# Running the Sample CorDapp
+
+1. Goto http://localhost:50007/
+2. Click the "Create Game Account" to create account for players. Create two accounts say "Player1" and "Player2".
+    ![Create Player](./snaps/Create_Player.png)
+3. To State the Game enter the player's name in Player 1 and Player 2 field and click on "Start Game" button.
+4. The game is now started.
+    ![Create Player](./snaps/game.png)
+5. Player two can join from a different browser window by using the "Join Game as Player 2" button on the landing screen.
+   The Game Id can be found in the Game screen.
+6. Each player need to rool the dice till one of them reaches 100. The one who reaches 100 first becomes the winner.   
 
 
 

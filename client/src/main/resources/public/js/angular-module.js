@@ -177,7 +177,7 @@ app.controller('AppController', function($http, toastr, $uibModal, $interval) {
                     demoApp.playerNum  = 2;
                 }
                 demoApp.animatePlayer(flag);
-                if(demoApp.game.winner != "null"){
+                if(demoApp.game.winner != null){
                     demoApp.handleConsole(true);
                 }else{
                     demoApp.handleConsole();
