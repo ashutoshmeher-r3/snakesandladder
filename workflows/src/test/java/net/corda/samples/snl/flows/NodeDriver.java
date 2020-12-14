@@ -1,4 +1,4 @@
-package com.supplychain;
+package net.corda.samples.snl.flows;
 
 import com.google.common.collect.ImmutableList;
 import net.corda.core.identity.CordaX500Name;

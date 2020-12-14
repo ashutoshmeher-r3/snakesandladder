@@ -1,4 +1,4 @@
-package com.supplychain;
+package net.corda.samples.snl.flows;
 
 import com.google.common.collect.ImmutableList;
 import com.r3.corda.lib.accounts.contracts.states.AccountInfo;

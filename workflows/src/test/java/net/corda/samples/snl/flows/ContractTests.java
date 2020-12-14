@@ -1,4 +1,4 @@
-package com.supplychain.contracts;
+package net.corda.samples.snl.flows;
 
 import net.corda.testing.node.MockServices;
 import org.junit.Test;
